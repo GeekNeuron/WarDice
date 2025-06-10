@@ -24,20 +24,15 @@
         <p>Created by <a href="https://github.com/GeekNeuron/WarDice" target="_blank">GeekNeuron</a></p>
     </footer>
 
-    <div id="fight-overlays" style="display: none;">
-        <img id="dice1-eyes" class="eye-sprite" src="" alt="Angry Eyes">
-        <img id="dice2-eyes" class="eye-sprite" src="" alt="Angry Eyes">
-        <img id="fight-cloud" src="" alt="Fight Cloud">
-    </div>
-
     <script type="importmap">
     {
       "imports": {
-        "three": "./lib/three.module.js"
+        "three": "./lib/three.module.js",
+        "three/addons/": "./lib/addons/"
       }
     }
     </script>
-
+    
     <script src="./lib/cannon.min.js"></script>
     
     <script type="module" src="script.js"></script>
