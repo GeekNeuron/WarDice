@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>War Dice by GeekNeuron</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-theme"> <header>
+        <h1 id="theme-switcher">War Dice</h1>
+    </header>
+
+    <main>
+        <div id="game-canvas-container">
+            </div>
+        <div id="ui-container">
+            <button id="throw-button">Throw Dice</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>Created by <a href="https://github.com/GeekNeuron/WarDice" target="_blank">GeekNeuron</a></p>
+    </footer>
+
+    <div id="fight-overlays" style="display: none;">
+        <img id="dice1-eyes" class="eye-sprite" src="assets/overlays/eyes_angry.svg" alt="Angry Eyes">
+        <img id="dice2-eyes" class="eye-sprite" src="assets/overlays/eyes_angry.svg" alt="Angry Eyes">
+        <img id="fight-cloud" src="assets/overlays/fight_cloud.gif" alt="Fight Cloud">
+    </div>
+
+    <script src="lib/three.min.js"></script>
+    <script src="lib/cannon.min.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
