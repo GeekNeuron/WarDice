@@ -1,40 +1,43 @@
 // =============================================================================
-// War Dice - A game by GeekNeuron
+// War Dice - A game by GeekNeuron (Final Refined Version)
 // =============================================================================
 
 // --- 1. Imports and Setup ---
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 // --- Global Variables ---
 let world, scene, camera, renderer, dice = [];
-const overlays = {
-    container: document.getElementById('fight-overlays'),
-    cloud: document.getElementById('fight-cloud'),
-    eyes1: document.getElementById('dice1-eyes'),
-    eyes2: document.getElementById('dice2-eyes'),
-};
-
 const throwButton = document.getElementById('throw-button');
 const themeSwitcher = document.getElementById('theme-switcher');
 const canvasContainer = document.getElementById('game-canvas-container');
 
-let isFighting = false;
-const textureLoader = new THREE.TextureLoader();
+// --- Materials ---
+const diceMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf0f0f0, // A softer white
+    roughness: 0.15,
+    metalness: 0.2,
+});
+const pipMaterial = new THREE.MeshStandardMaterial({
+    color: 0x111111, // A soft black
+    roughness: 0.4,
+    metalness: 0,
+});
 
 
 // --- 2. Initialize the World ---
 function init() {
-    // Physics World (CANNON.js is loaded globally)
-    world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82 * 2, 0) });
+    // Physics World
+    world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
     world.broadphase = new CANNON.NaiveBroadphase();
     world.solver.iterations = 16;
 
-    // 3D Scene (THREE.js)
+    // 3D Scene
     scene = new THREE.Scene();
 
     // Camera
-    camera = new THREE.PerspectiveCamera(35, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 100);
-    camera.position.set(0, 8, 12);
+    camera = new THREE.PerspectiveCamera(40, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 100);
+    camera.position.set(0, 6, 8);
     camera.lookAt(0, 0, 0);
 
     // Renderer
@@ -42,20 +45,32 @@ function init() {
     renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     canvasContainer.appendChild(renderer.domElement);
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
-    const topLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    topLight.position.set(0, 10, 5);
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    topLight.position.set(5, 10, 7);
     topLight.castShadow = true;
+    topLight.shadow.mapSize.width = 2048;
+    topLight.shadow.mapSize.height = 2048;
     scene.add(topLight);
-
-    // Physics Floor
-    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+    
+    // Physics and Visual Floor
+    const floorMaterial = new CANNON.Material('floorMaterial');
+    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: floorMaterial });
     floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     world.addBody(floorBody);
+    
+    const floorMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(20, 20),
+        new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.1, roughness: 0.6 })
+    );
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.receiveShadow = true;
+    scene.add(floorMesh);
 
     // Event Listeners
     themeSwitcher.addEventListener('click', toggleTheme);
@@ -74,36 +89,72 @@ function toggleTheme() {
 
 
 // --- 4. Dice Creation ---
-function createDice() {
-    // UPDATED: Load a texture for the dice
-    // You need to create this image file yourself. It should map numbers to faces.
-    const texture = textureLoader.load('assets/textures/dice_texture.png');
-    const materials = [
-        new THREE.MeshStandardMaterial({ map: texture }), // right (1)
-        new THREE.MeshStandardMaterial({ map: texture }), // left (6)
-        new THREE.MeshStandardMaterial({ map: texture }), // top (2)
-        new THREE.MeshStandardMaterial({ map: texture }), // bottom (5)
-        new THREE.MeshStandardMaterial({ map: texture }), // front (3)
-        new THREE.MeshStandardMaterial({ map: texture }), // back (4)
-    ];
+function createPip(position) {
+    const pipGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.025, 16);
+    const pip = new THREE.Mesh(pipGeometry, pipMaterial);
+    pip.position.copy(position);
+    pip.castShadow = true;
+    return pip;
+}
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const mesh = new THREE.Mesh(geometry, materials);
-    mesh.castShadow = true;
+function createPips(number) {
+    const group = new THREE.Group();
+    const spacing = 0.25;
+    const depth = 0.505; // Slightly more than half the dice size for indentation
+
+    const positions = {
+        1: [new THREE.Vector3(0, 0, depth)],
+        2: [new THREE.Vector3(-spacing, spacing, depth), new THREE.Vector3(spacing, -spacing, depth)],
+        3: [new THREE.Vector3(-spacing, spacing, depth), new THREE.Vector3(0, 0, depth), new THREE.Vector3(spacing, -spacing, depth)],
+        4: [new THREE.Vector3(-spacing, spacing, depth), new THREE.Vector3(spacing, spacing, depth), new THREE.Vector3(-spacing, -spacing, depth), new THREE.Vector3(spacing, -spacing, depth)],
+        5: [new THREE.Vector3(-spacing, spacing, depth), new THREE.Vector3(spacing, spacing, depth), new THREE.Vector3(0, 0, depth), new THREE.Vector3(-spacing, -spacing, depth), new THREE.Vector3(spacing, -spacing, depth)],
+        6: [new THREE.Vector3(-spacing, spacing, depth), new THREE.Vector3(spacing, spacing, depth), new THREE.Vector3(-spacing, 0, depth), new THREE.Vector3(spacing, 0, depth), new THREE.Vector3(-spacing, -spacing, depth), new THREE.Vector3(spacing, -spacing, depth)]
+    };
+
+    if (positions[number]) {
+        positions[number].forEach(pos => {
+            group.add(createPip(pos));
+        });
+    }
     
-    // To map faces correctly, you may need to adjust UVs or have a specific texture map.
-    // This is a basic setup.
+    return group;
+}
 
-    scene.add(mesh);
+function createDice() {
+    const diceSize = 1;
+    const roundedBox = new RoundedBoxGeometry(diceSize, diceSize, diceSize, 6, 0.1);
+    const diceBodyMesh = new THREE.Mesh(roundedBox, diceMaterial);
+    diceBodyMesh.castShadow = true;
+
+    const fullDice = new THREE.Group();
+    fullDice.add(diceBodyMesh);
+    
+    // Create pips for each face
+    const pips = [
+        createPips(1), createPips(6), createPips(2),
+        createPips(5), createPips(3), createPips(4)
+    ];
+    
+    // Rotate and position pips on each face
+    pips[0].rotation.y = -Math.PI / 2; // Right face (+X)
+    pips[1].rotation.y = Math.PI / 2;  // Left face (-X)
+    pips[2].rotation.x = Math.PI / 2;  // Top face (+Y)
+    pips[3].rotation.x = -Math.PI / 2; // Bottom face (-Y)
+    pips[4].rotation.y = 0;             // Front face (+Z)
+    pips[5].rotation.y = Math.PI;       // Back face (-Z)
+
+    pips.forEach(pipGroup => fullDice.add(pipGroup));
+
+    scene.add(fullDice);
 
     const body = new CANNON.Body({
-        mass: 1.2,
-        shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
+        mass: 1,
+        shape: new CANNON.Box(new CANNON.Vec3(diceSize / 2, diceSize / 2, diceSize / 2)),
         sleepTimeLimit: 0.5
     });
     world.addBody(body);
 
-    dice.push({ mesh, body });
+    dice.push({ mesh: fullDice, body: body });
 }
 
 
@@ -114,48 +165,27 @@ function throwDice() {
         world.remove(d.body);
     });
     dice = [];
-    stopFight();
 
     createDice();
     createDice();
 
     dice.forEach((d, index) => {
-        d.body.position.set(Math.random() * 2 - 1, 5 + index, Math.random() * 2 - 1);
+        d.body.position.set(Math.random() * 2 - 1, 3 + index, Math.random() * 2 - 1);
         d.body.quaternion.setFromAxisAngle(new CANNON.Vec3(Math.random(), Math.random(), Math.random()).unit(), Math.random() * Math.PI * 2);
         d.body.angularVelocity.set(Math.random() * 10, Math.random() * 10, Math.random() * 10);
         d.body.wakeUp();
     });
 
-    setTimeout(startFight, 2500);
-}
-
-function startFight() {
-    if (dice.length < 2) return;
-    isFighting = true;
-    overlays.container.style.display = 'block';
-    // Load your GIF and SVG for the fight overlays in index.html
-    overlays.eyes1.src = "assets/overlays/eyes_angry.svg";
-    overlays.eyes2.src = "assets/overlays/eyes_angry.svg";
-    overlays.cloud.src = "assets/overlays/fight_cloud.gif";
-
-    setTimeout(stopFight, 10000);
-}
-
-function stopFight() {
-    isFighting = false;
-    overlays.container.style.display = 'none';
-
-    // After fight, check results if dice have stopped
+    // Log the result after 5 seconds to allow dice to settle
     setTimeout(() => {
-        if(dice.length < 2) return;
+        if (dice.length < 2) return;
         const value1 = getDiceValue(dice[0]);
         const value2 = getDiceValue(dice[1]);
         console.log(`Dice 1 shows: ${value1}, Dice 2 shows: ${value2}`);
-    }, 1000); // Wait 1 sec for dice to settle after fight
+    }, 5000); 
 }
 
-
-// --- 6. Animation and Rendering Loop ---
+// --- 6. Animation Loop ---
 function animate() {
     requestAnimationFrame(animate);
     world.step(1 / 60);
@@ -165,46 +195,22 @@ function animate() {
         d.mesh.quaternion.copy(d.body.quaternion);
     }
     
-    if (isFighting) {
-        updateFightOverlays();
-    }
-
     renderer.render(scene, camera);
 }
 
-function updateFightOverlays() {
-    const d1Pos = toScreenPosition(dice[0].mesh, camera);
-    const d2Pos = toScreenPosition(dice[1].mesh, camera);
-    const midX = (d1Pos.x + d2Pos.x) / 2;
-    const midY = (d1Pos.y + d2Pos.y) / 2;
-    overlays.cloud.style.transform = `translate(-50%, -50%) translate(${midX}px, ${midY}px)`;
-    overlays.eyes1.style.transform = `translate(-50%, -50%) translate(${d1Pos.x}px, ${d1Pos.y}px)`;
-    overlays.eyes2.style.transform = `translate(-50%, -50%) translate(${d2Pos.x}px, ${d2Pos.y}px)`;
-}
-
-function toScreenPosition(obj, camera) {
-    const vector = new THREE.Vector3();
-    obj.getWorldPosition(vector);
-    vector.project(camera);
-    return {
-        x: (vector.x * 0.5 + 0.5) * canvasContainer.clientWidth,
-        y: (vector.y * -0.5 + 0.5) * canvasContainer.clientHeight
-    };
-}
-
-// --- 7. Utility ---
+// --- 7. Utility to get dice value ---
 function getDiceValue(diceObject) {
     const body = diceObject.body;
     let maxDot = -Infinity;
     let topFaceIndex = -1;
 
     const faceNormals = [
-        new CANNON.Vec3(1, 0, 0),  // right
-        new CANNON.Vec3(-1, 0, 0), // left
-        new CANNON.Vec3(0, 1, 0),  // top
-        new CANNON.Vec3(0, -1, 0), // bottom
-        new CANNON.Vec3(0, 0, 1),  // front
-        new CANNON.Vec3(0, 0, -1)  // back
+        new CANNON.Vec3(1, 0, 0),  // Right face
+        new CANNON.Vec3(-1, 0, 0), // Left face
+        new CANNON.Vec3(0, 1, 0),  // Top face
+        new CANNON.Vec3(0, -1, 0), // Bottom face
+        new CANNON.Vec3(0, 0, 1),  // Front face
+        new CANNON.Vec3(0, 0, -1)  // Back face
     ];
 
     for (let i = 0; i < faceNormals.length; i++) {
@@ -215,11 +221,9 @@ function getDiceValue(diceObject) {
         }
     }
     
-    // Map face index to dice value (standard dice layout)
-    const values = [1, 6, 2, 5, 3, 4];
+    const values = [1, 6, 2, 5, 3, 4]; // Standard dice layout
     return values[topFaceIndex];
 }
-
 
 // --- 8. Start the Application ---
 init();
