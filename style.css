@@ -2,13 +2,13 @@
 :root {
     --bg-color-light: #f4f4f9;
     --text-color-light: #1a1a1a;
-    --board-color-light: #ffffff;
+    --container-bg-light: #ffffff;
     --accent-color-light: #007bff;
     --shadow-color-light: rgba(0, 0, 0, 0.1);
 
     --bg-color-dark: #121212;
     --text-color-dark: #e0e0e0;
-    --board-color-dark: #1e1e1e;
+    --container-bg-dark: #1e1e1e;
     --accent-color-dark: #64ffda;
     --shadow-color-dark: rgba(0, 0, 0, 0.4);
 }
@@ -16,22 +16,30 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
+    padding: 20px;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
+    box-sizing: border-box;
     transition: background-color 0.3s, color 0.3s;
 }
 
 /* Theming */
-body.light-theme {
-    background-color: var(--bg-color-light);
-    color: var(--text-color-light);
-}
+body.light-theme { background-color: var(--bg-color-light); color: var(--text-color-light); }
+body.dark-theme { background-color: var(--bg-color-dark); color: var(--text-color-dark); }
 
-body.dark-theme {
-    background-color: var(--bg-color-dark);
-    color: var(--text-color-dark);
+/* NEW: Main container */
+.main-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px var(--shadow-color-light);
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
+body.light-theme .main-container { background-color: var(--container-bg-light); }
+body.dark-theme .main-container { background-color: var(--container-bg-dark); box-shadow: 0 8px 30px var(--shadow-color-dark); }
 
 /* Header */
 header h1 {
@@ -40,37 +48,18 @@ header h1 {
     text-align: center;
     cursor: pointer;
     user-select: none;
-    padding: 20px 0;
+    padding: 0 0 20px 0;
     margin: 0;
 }
 
 /* Main Game Area */
-main {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-}
-
 #game-canvas-container {
-    width: 90vw;
-    max-width: 500px;
+    width: 100%;
     height: 400px;
     border-radius: 15px;
-    transition: background-color 0.3s, box-shadow 0.3s;
+    /* UPDATED: Background is now transparent */
+    background-color: transparent; 
 }
-
-body.light-theme #game-canvas-container {
-    background-color: var(--board-color-light);
-    box-shadow: 0 4px 20px var(--shadow-color-light);
-}
-body.dark-theme #game-canvas-container {
-    background-color: var(--board-color-dark);
-    box-shadow: 0 4px 25px var(--shadow-color-dark);
-}
-
 #game-canvas-container canvas {
     display: block;
     width: 100%;
@@ -81,7 +70,38 @@ body.dark-theme #game-canvas-container {
 /* UI Elements */
 #ui-container {
     margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
+
+/* NEW: Dice Selector */
+#dice-selector {
+    display: flex;
+    gap: 10px;
+    background-color: rgba(128, 128, 128, 0.1);
+    padding: 5px;
+    border-radius: 12px;
+}
+.selector-btn {
+    padding: 8px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: transparent;
+    transition: all 0.2s ease-in-out;
+}
+body.light-theme .selector-btn { color: #555; }
+body.dark-theme .selector-btn { color: #aaa; }
+.selector-btn.active {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+body.light-theme .selector-btn.active { background-color: #fff; color: #000; }
+body.dark-theme .selector-btn.active { background-color: #444; color: #fff; }
+
 
 #throw-button {
     padding: 12px 30px;
@@ -93,23 +113,14 @@ body.dark-theme #game-canvas-container {
     transition: all 0.2s ease-in-out;
 }
 
-body.light-theme #throw-button {
-    background-color: var(--accent-color-light);
-    color: white;
-}
-body.dark-theme #throw-button {
-    background-color: var(--accent-color-dark);
-    color: black;
-}
-#throw-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
+body.light-theme #throw-button { background-color: var(--accent-color-light); color: white; }
+body.dark-theme #throw-button { background-color: var(--accent-color-dark); color: black; }
+#throw-button:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
 /* Footer */
 footer {
     text-align: center;
-    padding: 20px;
+    padding: 20px 0 0 0;
     font-size: 0.9rem;
     opacity: 0.7;
 }
