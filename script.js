@@ -4,7 +4,7 @@
 
 // --- 1. Imports and Setup ---
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'lib/addons/RoundedBoxGeometry.js';
+import { RoundedBoxGeometry } from 'lib/addons/geometries/RoundedBoxGeometry.js';
 
 // --- Global Variables ---
 let world, scene, camera, renderer, dice = [];
