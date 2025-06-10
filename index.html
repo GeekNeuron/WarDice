@@ -9,21 +9,27 @@
 </head>
 <body class="light-theme">
 
-    <header>
-        <h1 id="theme-switcher">Dice</h1>
-    </header>
+    <div class="main-container">
+        <header>
+            <h1 id="theme-switcher">Dice</h1>
+        </header>
 
-    <main>
-        <div id="game-canvas-container">
+        <main>
+            <div id="game-canvas-container">
+                </div>
+            <div id="ui-container">
+                <div id="dice-selector">
+                    <button class="selector-btn active" data-count="1">1 Die</button>
+                    <button class="selector-btn" data-count="2">2 Dice</button>
+                </div>
+                <button id="throw-button">Throw Dice</button>
             </div>
-        <div id="ui-container">
-            <button id="throw-button">Throw Dice</button>
-        </div>
-    </main>
+        </main>
 
-    <footer>
-        <p>Created by <a href="https://github.com/GeekNeuron/WarDice" target="_blank">GeekNeuron</a></p>
-    </footer>
+        <footer>
+            <p>Created by <a href="https://github.com/GeekNeuron/WarDice" target="_blank">GeekNeuron</a></p>
+        </footer>
+    </div>
 
     <script type="importmap">
     {
