@@ -3,7 +3,7 @@
 // =============================================================================
 
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoundedBoxGeometry } from 'lib/addons/geometries/RoundedBoxGeometry.js';
 
 // --- Global Variables & UI Elements ---
 let world, scene, camera, renderer, dice = [];
