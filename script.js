@@ -14,16 +14,15 @@ const canvasContainer = document.getElementById('game-canvas-container');
 
 // --- Materials ---
 const diceMaterial = new THREE.MeshStandardMaterial({
-    color: 0xf0f0f0, // A softer white
+    color: 0xf0f0f0,
     roughness: 0.15,
     metalness: 0.2,
 });
 const pipMaterial = new THREE.MeshStandardMaterial({
-    color: 0x111111, // A soft black
+    color: 0x111111,
     roughness: 0.4,
     metalness: 0,
 });
-
 
 // --- 2. Initialize the World ---
 function init() {
@@ -59,8 +58,7 @@ function init() {
     scene.add(topLight);
     
     // Physics and Visual Floor
-    const floorMaterial = new CANNON.Material('floorMaterial');
-    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: floorMaterial });
+    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
     floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     world.addBody(floorBody);
     
@@ -80,13 +78,11 @@ function init() {
     animate();
 }
 
-
 // --- 3. Theme Controller ---
 function toggleTheme() {
     document.body.classList.toggle('dark-theme');
     document.body.classList.toggle('light-theme');
 }
-
 
 // --- 4. Dice Creation ---
 function createPip(position) {
@@ -129,13 +125,11 @@ function createDice() {
     const fullDice = new THREE.Group();
     fullDice.add(diceBodyMesh);
     
-    // Create pips for each face
     const pips = [
         createPips(1), createPips(6), createPips(2),
         createPips(5), createPips(3), createPips(4)
     ];
     
-    // Rotate and position pips on each face
     pips[0].rotation.y = -Math.PI / 2; // Right face (+X)
     pips[1].rotation.y = Math.PI / 2;  // Left face (-X)
     pips[2].rotation.x = Math.PI / 2;  // Top face (+Y)
@@ -157,7 +151,6 @@ function createDice() {
     dice.push({ mesh: fullDice, body: body });
 }
 
-
 // --- 5. Game Logic ---
 function throwDice() {
     dice.forEach(d => {
@@ -172,16 +165,15 @@ function throwDice() {
     dice.forEach((d, index) => {
         d.body.position.set(Math.random() * 2 - 1, 3 + index, Math.random() * 2 - 1);
         d.body.quaternion.setFromAxisAngle(new CANNON.Vec3(Math.random(), Math.random(), Math.random()).unit(), Math.random() * Math.PI * 2);
-        d.body.angularVelocity.set(Math.random() * 10, Math.random() * 10, Math.random() * 10);
+        d.body.angularVelocity.set(Math.random() * 20, Math.random() * 20, Math.random() * 20);
         d.body.wakeUp();
     });
 
-    // Log the result after 5 seconds to allow dice to settle
     setTimeout(() => {
         if (dice.length < 2) return;
         const value1 = getDiceValue(dice[0]);
         const value2 = getDiceValue(dice[1]);
-        console.log(`Dice 1 shows: ${value1}, Dice 2 shows: ${value2}`);
+        console.log(`Dice 1: ${value1}, Dice 2: ${value2}`);
     }, 5000); 
 }
 
@@ -205,13 +197,12 @@ function getDiceValue(diceObject) {
     let topFaceIndex = -1;
 
     const faceNormals = [
-        new CANNON.Vec3(1, 0, 0),  // Right face
-        new CANNON.Vec3(-1, 0, 0), // Left face
-        new CANNON.Vec3(0, 1, 0),  // Top face
-        new CANNON.Vec3(0, -1, 0), // Bottom face
-        new CANNON.Vec3(0, 0, 1),  // Front face
-        new CANNON.Vec3(0, 0, -1)  // Back face
+        new CANNON.Vec3(1, 0, 0), new CANNON.Vec3(-1, 0, 0),
+        new CANNON.Vec3(0, 1, 0), new CANNON.Vec3(0, -1, 0),
+        new CANNON.Vec3(0, 0, 1), new CANNON.Vec3(0, 0, -1)
     ];
+    
+    const values = [1, 6, 2, 5, 3, 4];
 
     for (let i = 0; i < faceNormals.length; i++) {
         const worldNormal = body.quaternion.vmult(faceNormals[i]);
@@ -220,8 +211,6 @@ function getDiceValue(diceObject) {
             topFaceIndex = i;
         }
     }
-    
-    const values = [1, 6, 2, 5, 3, 4]; // Standard dice layout
     return values[topFaceIndex];
 }
 
