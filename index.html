@@ -6,7 +6,9 @@
     <title>War Dice by GeekNeuron</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-theme"> <header>
+<body class="light-theme">
+
+    <header>
         <h1 id="theme-switcher">War Dice</h1>
     </header>
 
@@ -23,14 +25,22 @@
     </footer>
 
     <div id="fight-overlays" style="display: none;">
-        <img id="dice1-eyes" class="eye-sprite" src="assets/overlays/eyes_angry.svg" alt="Angry Eyes">
-        <img id="dice2-eyes" class="eye-sprite" src="assets/overlays/eyes_angry.svg" alt="Angry Eyes">
-        <img id="fight-cloud" src="assets/overlays/fight_cloud.gif" alt="Fight Cloud">
+        <img id="dice1-eyes" class="eye-sprite" src="" alt="Angry Eyes">
+        <img id="dice2-eyes" class="eye-sprite" src="" alt="Angry Eyes">
+        <img id="fight-cloud" src="" alt="Fight Cloud">
     </div>
 
-    <script src="lib/three.min.js"></script>
-    <script src="lib/cannon.min.js"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "./lib/three.module.js"
+      }
+    }
+    </script>
+
+    <script src="./lib/cannon.min.js"></script>
     
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
+
 </body>
 </html>
